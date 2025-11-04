@@ -7,6 +7,8 @@ from math import pi
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
+import io
+from datetime import datetime
 
 # Wartości maksymalne dla funkcji
 max_task_1 = 100
@@ -108,6 +110,14 @@ def plot_temperature(temp_history, title):
     ax.set_title(title, fontsize=14, fontweight='bold')
     ax.grid(True, alpha=0.3)
     return fig
+
+
+def save_figure_to_bytes(fig, format='png', dpi=300):
+    """Zapisuje wykres do bufora bajtów"""
+    buf = io.BytesIO()
+    fig.savefig(buf, format=format, dpi=dpi, bbox_inches='tight')
+    buf.seek(0)
+    return buf
 
 
 def main():
@@ -262,23 +272,83 @@ def main():
                 f"Funkcja z zaznaczonym rozwiązaniem"
             )
             st.pyplot(fig1)
+
+            # Przyciski do pobierania
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                buf1_png = save_figure_to_bytes(fig1, format='png', dpi=300)
+                st.download_button(
+                    label="💾 Pobierz jako PNG (wysoka jakość)",
+                    data=buf1_png,
+                    file_name=f"funkcja_rozwiazanie_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                    mime="image/png"
+                )
+            with col_btn2:
+                buf1_pdf = save_figure_to_bytes(fig1, format='pdf')
+                st.download_button(
+                    label="📄 Pobierz jako PDF",
+                    data=buf1_pdf,
+                    file_name=f"funkcja_rozwiazanie_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                    mime="application/pdf"
+                )
+
             plt.close(fig1)
 
         with tab2:
             fig2 = plot_convergence(history, "Zbieżność algorytmu")
             st.pyplot(fig2)
-            plt.close(fig2)
 
             st.info(f"Najlepsza wartość początkowa: {history[0][1]:.6f}")
             st.info(f"Najlepsza wartość końcowa: {history[-1][1]:.6f}")
 
+            # Przyciski do pobierania
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                buf2_png = save_figure_to_bytes(fig2, format='png', dpi=300)
+                st.download_button(
+                    label="💾 Pobierz jako PNG (wysoka jakość)",
+                    data=buf2_png,
+                    file_name=f"zbieznosc_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                    mime="image/png"
+                )
+            with col_btn2:
+                buf2_pdf = save_figure_to_bytes(fig2, format='pdf')
+                st.download_button(
+                    label="📄 Pobierz jako PDF",
+                    data=buf2_pdf,
+                    file_name=f"zbieznosc_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                    mime="application/pdf"
+                )
+
+            plt.close(fig2)
+
         with tab3:
             fig3 = plot_temperature(temp_history, "Spadek temperatury w czasie")
             st.pyplot(fig3)
-            plt.close(fig3)
 
             st.info(f"Temperatura początkowa: {temp_history[0]:.2f}")
             st.info(f"Temperatura końcowa: {temp_history[-1]:.6f}")
+
+            # Przyciski do pobierania
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                buf3_png = save_figure_to_bytes(fig3, format='png', dpi=300)
+                st.download_button(
+                    label="💾 Pobierz jako PNG (wysoka jakość)",
+                    data=buf3_png,
+                    file_name=f"temperatura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                    mime="image/png"
+                )
+            with col_btn2:
+                buf3_pdf = save_figure_to_bytes(fig3, format='pdf')
+                st.download_button(
+                    label="📄 Pobierz jako PDF",
+                    data=buf3_pdf,
+                    file_name=f"temperatura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                    mime="application/pdf"
+                )
+
+            plt.close(fig3)
 
         # Szczegóły techniczne
         with st.expander("🔍 Szczegóły techniczne"):

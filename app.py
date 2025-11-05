@@ -1,6 +1,5 @@
 # Mateusz Kosowski 251558
 # Jakub Rosiak 251620
-# Interaktywna aplikacja Streamlit dla algorytmu symulowanego wyżarzania
 
 import time
 from math import pi
@@ -10,18 +9,11 @@ import numpy as np
 import io
 from datetime import datetime
 
-# Wartości maksymalne dla funkcji
 max_task_1 = 100
 max_task_2 = 1.850547
 
 
-def cooling_function(factor, temp):
-    """Funkcja chłodzenia liniowego"""
-    return factor * temp
-
-
 def f1(x):
-    """Funkcja 1 - dwuwierzchołkowa"""
     if -105 < x < -95:
         return -2 * abs(x + 100) + 10
     if 95 < x < 105:
@@ -30,23 +22,19 @@ def f1(x):
 
 
 def f2(x):
-    """Funkcja 2 - sinusoidalna"""
     return x * np.sin(10 * pi * x)
 
 
 def generate_neighbor(solution, temperature, min_x, max_x):
-    """Generuje sąsiada w otoczeniu rozwiązania"""
     neighbor = solution + np.random.uniform(-2 * temperature, 2 * temperature)
     return np.clip(neighbor, min_x, max_x)
 
 
 def simulated_annealing(func, initial_temp, min_x, max_x, cooling_factor, epochs, coefficient, steps):
-    """Główny algorytm symulowanego wyżarzania"""
     temperature = initial_temp
     best_solution = np.random.uniform(min_x, max_x)
     count_of_iterations = 0
 
-    # Historia do wizualizacji
     history = []
     temp_history = []
 
@@ -67,13 +55,12 @@ def simulated_annealing(func, initial_temp, min_x, max_x, cooling_factor, epochs
             history.append((best_solution, func(best_solution)))
             temp_history.append(temperature)
 
-        temperature = cooling_function(cooling_factor, temperature)
+        temperature = temperature * cooling_factor
 
     return best_solution, count_of_iterations, history, temp_history
 
 
 def plot_function_with_solution(f, min_x, max_x, amount, solution, title):
-    """Tworzy wykres funkcji z zaznaczonym rozwiązaniem"""
     fig, ax = plt.subplots(figsize=(10, 6))
     x = np.linspace(min_x, max_x, amount)
     y = [f(xi) for xi in x]
@@ -88,7 +75,6 @@ def plot_function_with_solution(f, min_x, max_x, amount, solution, title):
 
 
 def plot_convergence(history, title):
-    """Tworzy wykres zbieżności algorytmu"""
     fig, ax = plt.subplots(figsize=(10, 6))
     iterations = list(range(len(history)))
     values = [h[1] for h in history]
@@ -101,7 +87,6 @@ def plot_convergence(history, title):
 
 
 def plot_temperature(temp_history, title):
-    """Tworzy wykres temperatury w czasie"""
     fig, ax = plt.subplots(figsize=(10, 6))
     iterations = list(range(len(temp_history)))
     ax.plot(iterations, temp_history, linewidth=1.5, color='orange')
@@ -113,7 +98,6 @@ def plot_temperature(temp_history, title):
 
 
 def save_figure_to_bytes(fig, format='png', dpi=300):
-    """Zapisuje wykres do bufora bajtów"""
     buf = io.BytesIO()
     fig.savefig(buf, format=format, dpi=dpi, bbox_inches='tight')
     buf.seek(0)
@@ -123,15 +107,14 @@ def save_figure_to_bytes(fig, format='png', dpi=300):
 def main():
     st.set_page_config(
         page_title="Symulowane Wyżarzanie",
-        page_icon="🔥",
         layout="wide"
     )
 
-    st.title("🔥 Algorytm Symulowanego Wyżarzania")
+    st.title("Algorytm Symulowanego Wyżarzania")
     st.markdown("**Autorzy:** Mateusz Kosowski 251558, Jakub Rosiak 251620")
 
     # Sidebar - wybór funkcji
-    st.sidebar.header("⚙️ Konfiguracja")
+    st.sidebar.header("Konfiguracja")
 
     function_choice = st.sidebar.selectbox(
         "Wybierz funkcję do optymalizacji",
@@ -190,16 +173,16 @@ def main():
     coefficient = st.sidebar.slider(
         "Współczynnik akceptacji",
         min_value=0.01,
-        max_value=1.0,
-        value=0.1,
+        max_value=0.1,
+        value=0.01,
         step=0.01
     )
 
     # Przycisk uruchomienia
-    run_button = st.sidebar.button("🚀 Uruchom algorytm", type="primary")
+    run_button = st.sidebar.button("Uruchom algorytm", type="primary")
 
     # Sekcja informacyjna
-    with st.expander("ℹ️ Informacje o funkcjach"):
+    with st.expander("Informacje o funkcjach"):
         st.markdown("""
         ### Funkcja 1 (dwuwierzchołkowa)
         Funkcja z dwoma lokalnymi maksimami:
@@ -212,7 +195,7 @@ def main():
         - Maksimum globalne ≈ 1.850547
         """)
 
-    with st.expander("📚 Informacje o parametrach"):
+    with st.expander("Informacje o parametrach"):
         st.markdown("""
         - **Liczba epok**: Liczba głównych iteracji algorytmu
         - **Kroki na epokę**: Liczba prób w każdej epoce przed obniżeniem temperatury
@@ -239,10 +222,10 @@ def main():
 
             end = time.perf_counter()
             execution_time = (end - start) * 1000
-            precision = abs(func(solution) - max_value)
+            precision = abs(func(solution) - func(max_value))
 
         # Wyświetlanie wyników
-        st.success("✅ Algorytm zakończony!")
+        st.success("Algorytm zakończony!")
 
         # Metryki
         col1, col2, col3, col4 = st.columns(4)
@@ -262,7 +245,7 @@ def main():
         st.metric("Dokładność (odległość od optimum)", f"{precision:.6f}")
 
         # Wykresy
-        st.subheader("📊 Wizualizacje")
+        st.subheader("Wizualizacje")
 
         tab1, tab2, tab3 = st.tabs(["Funkcja z rozwiązaniem", "Zbieżność", "Temperatura"])
 
@@ -274,22 +257,14 @@ def main():
             st.pyplot(fig1)
 
             # Przyciski do pobierania
-            col_btn1, col_btn2 = st.columns(2)
+            col_btn1 = st.columns(1)[0]
             with col_btn1:
                 buf1_png = save_figure_to_bytes(fig1, format='png', dpi=300)
                 st.download_button(
-                    label="💾 Pobierz jako PNG (wysoka jakość)",
+                    label="Pobierz",
                     data=buf1_png,
                     file_name=f"funkcja_rozwiazanie_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
                     mime="image/png"
-                )
-            with col_btn2:
-                buf1_pdf = save_figure_to_bytes(fig1, format='pdf')
-                st.download_button(
-                    label="📄 Pobierz jako PDF",
-                    data=buf1_pdf,
-                    file_name=f"funkcja_rozwiazanie_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf"
                 )
 
             plt.close(fig1)
@@ -302,22 +277,14 @@ def main():
             st.info(f"Najlepsza wartość końcowa: {history[-1][1]:.6f}")
 
             # Przyciski do pobierania
-            col_btn1, col_btn2 = st.columns(2)
+            col_btn1 = st.columns(1)[0]
             with col_btn1:
                 buf2_png = save_figure_to_bytes(fig2, format='png', dpi=300)
                 st.download_button(
-                    label="💾 Pobierz jako PNG (wysoka jakość)",
+                    label="Pobierz",
                     data=buf2_png,
                     file_name=f"zbieznosc_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
                     mime="image/png"
-                )
-            with col_btn2:
-                buf2_pdf = save_figure_to_bytes(fig2, format='pdf')
-                st.download_button(
-                    label="📄 Pobierz jako PDF",
-                    data=buf2_pdf,
-                    file_name=f"zbieznosc_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf"
                 )
 
             plt.close(fig2)
@@ -330,28 +297,20 @@ def main():
             st.info(f"Temperatura końcowa: {temp_history[-1]:.6f}")
 
             # Przyciski do pobierania
-            col_btn1, col_btn2 = st.columns(2)
+            col_btn1 = st.columns(1)[0]
             with col_btn1:
                 buf3_png = save_figure_to_bytes(fig3, format='png', dpi=300)
                 st.download_button(
-                    label="💾 Pobierz jako PNG (wysoka jakość)",
+                    label="Pobierz",
                     data=buf3_png,
                     file_name=f"temperatura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
                     mime="image/png"
-                )
-            with col_btn2:
-                buf3_pdf = save_figure_to_bytes(fig3, format='pdf')
-                st.download_button(
-                    label="📄 Pobierz jako PDF",
-                    data=buf3_pdf,
-                    file_name=f"temperatura_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                    mime="application/pdf"
                 )
 
             plt.close(fig3)
 
         # Szczegóły techniczne
-        with st.expander("🔍 Szczegóły techniczne"):
+        with st.expander("Szczegóły techniczne"):
             st.markdown(f"""
             **Parametry użyte:**
             - Funkcja: {function_choice}
@@ -372,10 +331,9 @@ def main():
             """)
 
     else:
-        # Podgląd funkcji przed uruchomieniem
-        st.info("👈 Skonfiguruj parametry w panelu bocznym i kliknij 'Uruchom algorytm'")
+        st.info("Skonfiguruj parametry w panelu bocznym i kliknij 'Uruchom algorytm'")
 
-        st.subheader("📈 Podgląd wybranej funkcji")
+        st.subheader("Podgląd wybranej funkcji")
         fig_preview = plot_function_with_solution(
             func, default_min_x, default_max_x, plot_points,
             (default_min_x + default_max_x) / 2,

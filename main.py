@@ -168,7 +168,7 @@ def check_f2():
             metrics = generate_metrics(f=f2, epochs=Mi, temperature=5, alpha=0.997, steps=1, min_x=-1, max_x=2, coefficient=0.05,
                              max_value=max_task_2)
             results.append({
-                'Parametr': 'Epoki (M)',
+                'Parametr': 'Epoki',
                 'Wartość': Mi,
                 'Próba': i + 1,
                 'Rozwiązanie': metrics['solution'],
@@ -182,7 +182,7 @@ def check_f2():
             metrics = generate_metrics(f=f2, epochs=1200, temperature=Ti, alpha=0.997, steps=1, min_x=-1, max_x=2,
                              coefficient=0.05, max_value=max_task_2)
             results.append({
-                'Parametr': 'Temperatura (T)',
+                'Parametr': 'Temperatura',
                 'Wartość': Ti,
                 'Próba': i + 1,
                 'Rozwiązanie': metrics['solution'],
@@ -196,7 +196,7 @@ def check_f2():
             metrics = generate_metrics(f=f2, epochs=1200, temperature=5, alpha=ai, steps=1, min_x=-1, max_x=2, coefficient=0.05,
                              max_value=max_task_2)
             results.append({
-                'Parametr': 'Alpha (a)',
+                'Parametr': 'Alpha',
                 'Wartość': ai,
                 'Próba': i + 1,
                 'Rozwiązanie': metrics['solution'],

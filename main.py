@@ -5,6 +5,12 @@ from math import pi
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+
+# Ustawienia wyświetlania pandas
+pd.set_option('display.float_format', '{:.6f}'.format)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
 
 max_task_1 = 100
 max_task_2 = 1.850547
@@ -73,71 +79,160 @@ def generate_metrics(f, epochs, temperature, alpha, steps, min_x, max_x, coeffic
                                                cooling_factor=alpha, epochs=epochs, steps=steps,
                                                coefficient=coefficient)
     end = time.perf_counter()
+    execution_time = (end - start) * 1000  # w ms
     precision = abs(f(solution) - f(max_value))
-    print(f"Rozwiązanie: {solution}")
-    print(f"Czas wykonywania: {(end - start) * 1000:.2f} ms")
-    print(f"Liczba iteracji: {iterations}")
-    print(f"Dokładność: {precision}\n")
-    return solution
+
+    return {
+        'solution': solution,
+        'execution_time': execution_time,
+        'iterations': iterations,
+        'precision': precision
+    }
 
 
 def check_f1():
-    epoch_iterations = [2000, 1000, 100]
-    temperature = [400, 200, 600]
+    epoch_iterations = [5000, 2500, 100]
+    temperature = [800, 400, 100]
     alpha = [0.9, 0.94, 0.98]
+
+    results = []
 
     for Mi in epoch_iterations:
         for i in range(5):
-            print(f"Wyniki dla ilości epok = {Mi} ({i + 1}/5)")
-            generate_metrics(f=f1, epochs=Mi, temperature=500, alpha=0.999, steps=1, min_x=-150, max_x=150,
-                             coefficient=0.1, max_value=max_task_1)
+            metrics = generate_metrics(f=f1, epochs=Mi, temperature=500, alpha=0.999, steps=1, min_x=-150, max_x=150,
+                             coefficient=0.05, max_value=max_task_1)
+            results.append({
+                'Parametr': 'Epoki',
+                'Wartość': Mi,
+                'Próba': i + 1,
+                'Rozwiązanie': metrics['solution'],
+                'Czas [ms]': metrics['execution_time'],
+                'Iteracje': metrics['iterations'],
+                'Dokładność': metrics['precision']
+            })
 
     for Ti in temperature:
         for i in range(5):
-            print(f"Wyniki dla temperatury = {Ti} ({i + 1}/5)")
-            generate_metrics(f=f1, epochs=3000, temperature=Ti, alpha=0.999, steps=1, min_x=-150, max_x=150,
-                             coefficient=0.1, max_value=max_task_1)
+            metrics = generate_metrics(f=f1, epochs=3000, temperature=Ti, alpha=0.999, steps=1, min_x=-150, max_x=150,
+                             coefficient=0.05, max_value=max_task_1)
+            results.append({
+                'Parametr': 'Temperatura',
+                'Wartość': Ti,
+                'Próba': i + 1,
+                'Rozwiązanie': metrics['solution'],
+                'Czas [ms]': metrics['execution_time'],
+                'Iteracje': metrics['iterations'],
+                'Dokładność': metrics['precision']
+            })
 
     for ai in alpha:
         for i in range(5):
-            print(f"Wyniki dla alpha = {ai} ({i + 1}/5)")
-            generate_metrics(f=f1, epochs=3000, temperature=500, alpha=ai, steps=1, min_x=-150, max_x=150,
-                             coefficient=0.1, max_value=max_task_1)
+            metrics = generate_metrics(f=f1, epochs=3000, temperature=500, alpha=ai, steps=1, min_x=-150, max_x=150,
+                             coefficient=0.05, max_value=max_task_1)
+            results.append({
+                'Parametr': 'Alpha',
+                'Wartość': ai,
+                'Próba': i + 1,
+                'Rozwiązanie': metrics['solution'],
+                'Czas [ms]': metrics['execution_time'],
+                'Iteracje': metrics['iterations'],
+                'Dokładność': metrics['precision']
+            })
+
+
+    df = pd.DataFrame(results)
+
+    df_display = df.copy()
+    df_display['Rozwiązanie'] = df_display['Rozwiązanie'].apply(lambda x: f"{x:.6f}")
+    df_display['Czas [ms]'] = df_display['Czas [ms]'].apply(lambda x: f"{x:.2f}")
+    df_display['Dokładność'] = df_display['Dokładność'].apply(lambda x: f"{x:.6f}")
+
+    print("\n" + "="*100)
+    print("PODSUMOWANIE WYNIKÓW DLA FUNKCJI F1")
+    print("="*100 + "\n")
+    print(df_display.to_string(index=False))
+    print("\n")
+
+    return df
 
 
 def check_f2():
-    M = [1000, 800, 500]
+    M = [5000, 2500, 100]
     T = [10, 50, 75]
     a = [0.9, 0.94, 0.98]
+
+    results = []
+
     for Mi in M:
         for i in range(5):
-            print(f"Wyniki dla M = {Mi} ({i + 1}/5)")
-            generate_metrics(f=f2, epochs=Mi, temperature=5, alpha=0.997, steps=1, min_x=-1, max_x=2, coefficient=0.1,
+            metrics = generate_metrics(f=f2, epochs=Mi, temperature=5, alpha=0.997, steps=1, min_x=-1, max_x=2, coefficient=0.05,
                              max_value=max_task_2)
+            results.append({
+                'Parametr': 'Epoki (M)',
+                'Wartość': Mi,
+                'Próba': i + 1,
+                'Rozwiązanie': metrics['solution'],
+                'Czas [ms]': metrics['execution_time'],
+                'Iteracje': metrics['iterations'],
+                'Dokładność': metrics['precision']
+            })
 
     for Ti in T:
         for i in range(5):
-            print(f"Wyniki dla T = {Ti} ({i + 1}/5)")
-            generate_metrics(f=f2, epochs=1200, temperature=Ti, alpha=0.997, steps=1, min_x=-1, max_x=2,
-                             coefficient=0.1, max_value=max_task_2)
+            metrics = generate_metrics(f=f2, epochs=1200, temperature=Ti, alpha=0.997, steps=1, min_x=-1, max_x=2,
+                             coefficient=0.05, max_value=max_task_2)
+            results.append({
+                'Parametr': 'Temperatura (T)',
+                'Wartość': Ti,
+                'Próba': i + 1,
+                'Rozwiązanie': metrics['solution'],
+                'Czas [ms]': metrics['execution_time'],
+                'Iteracje': metrics['iterations'],
+                'Dokładność': metrics['precision']
+            })
 
     for ai in a:
         for i in range(5):
-            print(f"Wyniki dla a = {ai} ({i + 1}/5)")
-            generate_metrics(f=f2, epochs=1200, temperature=5, alpha=ai, steps=1, min_x=-1, max_x=2, coefficient=0.1,
+            metrics = generate_metrics(f=f2, epochs=1200, temperature=5, alpha=ai, steps=1, min_x=-1, max_x=2, coefficient=0.05,
                              max_value=max_task_2)
+            results.append({
+                'Parametr': 'Alpha (a)',
+                'Wartość': ai,
+                'Próba': i + 1,
+                'Rozwiązanie': metrics['solution'],
+                'Czas [ms]': metrics['execution_time'],
+                'Iteracje': metrics['iterations'],
+                'Dokładność': metrics['precision']
+            })
+
+    df = pd.DataFrame(results)
+
+    df_display = df.copy()
+    df_display['Rozwiązanie'] = df_display['Rozwiązanie'].apply(lambda x: f"{x:.6f}")
+    df_display['Czas [ms]'] = df_display['Czas [ms]'].apply(lambda x: f"{x:.2f}")
+    df_display['Dokładność'] = df_display['Dokładność'].apply(lambda x: f"{x:.6f}")
+
+    print("\n" + "="*100)
+    print("PODSUMOWANIE WYNIKÓW DLA FUNKCJI F2")
+    print("="*100 + "\n")
+    print(df_display.to_string(index=False))
+    print("\n")
+
+    return df
 
 
 if __name__ == '__main__':
     print("Rozwiązanie domyślne funkcji 1: ")
     s1 = generate_metrics(f=f1, epochs=3000, temperature=500, alpha=0.999, steps=1, min_x=-150, max_x=150,
-                          coefficient=0.1, max_value=max_task_1)
+                          coefficient=0.05, max_value=max_task_1)
 
-    plot(f1, -150, 150, 500, s1)
+    plot(f1, -150, 150, 500, s1['solution'])
 
-    check_f1()
+    df1 = check_f1()
+
     print("Rozwiązanie domyślne funkcji 2: ")
-    s2 = generate_metrics(f=f2, epochs=1200, temperature=5, alpha=0.997, steps=1, min_x=-1, max_x=2, coefficient=0.1,
+    s2 = generate_metrics(f=f2, epochs=1200, temperature=5, alpha=0.997, steps=1, min_x=-1, max_x=2, coefficient=0.05,
                           max_value=max_task_2)
-    plot(f2, -1, 2, 1000, s2)
-    check_f2()
+    plot(f2, -1, 2, 1000, s2['solution'])
+
+    df2 = check_f2()
